@@ -34,7 +34,7 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 
 @pytest.fixture
 def mock_api_client() -> Generator[AsyncMock]:
-    """Mock Fluss API client with single device."""
+    """Mock Fluss API client."""
     with (
         patch(
             "homeassistant.components.fluss.coordinator.FlussApiClient",
@@ -48,8 +48,29 @@ def mock_api_client() -> Generator[AsyncMock]:
         client = mock_client.return_value
         client.async_get_devices.return_value = {
             "devices": [
-                {"deviceId": "2a303030sdj1", "deviceName": "Device 1"},
-                {"deviceId": "ape93k9302j2", "deviceName": "Device 2"},
+                {
+                    "deviceId": "2a303030sdj1",
+                    "deviceName": "Device 1",
+                    "userPermissions": {
+                        "canUseWiFi": True,
+                        "canOpenMain": True,
+                        "canOperateSwitch": True,
+                        "canViewState": True,
+                        "userType": "Owner",
+                    },
+                },
+                {
+                    "deviceId": "ape93k9302j2",
+                    "deviceName": "Device 2",
+                    "userPermissions": {
+                        "canUseWiFi": True,
+                        "canOpenMain": True,
+                        "canOperateSwitch": True,
+                        "canViewState": True,
+                        "userType": "Full Access",
+                    },
+                },
             ]
         }
+        client.async_trigger_device.return_value = None
         yield client
