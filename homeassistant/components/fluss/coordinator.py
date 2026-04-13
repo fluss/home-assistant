@@ -27,9 +27,7 @@ VALID_OPEN_CLOSE_STATUSES = {"Open", "Closed"}
 
 def device_has_cover_status(device_data: dict[str, Any]) -> bool:
     """Return True if the device status contains a valid openCloseStatus."""
-    status = device_data.get("status")
-    if status is None:
-        return False
+    status = device_data.get("status") or {}
     return status.get("openCloseStatus") in VALID_OPEN_CLOSE_STATUSES
 
 
@@ -61,42 +59,13 @@ class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]
         except FlussApiClientError as err:
             raise UpdateFailed(f"Error fetching Fluss devices: {err}") from err
 
-        all_devices: list[dict[str, Any]] = devices.get("devices", [])
-
-        # Filter to WiFi-capable devices only
-        wifi_devices: list[dict[str, Any]] = []
-        for device in all_devices:
-            permissions = device.get("userPermissions", {})
-            if permissions.get("canUseWiFi"):
-                wifi_devices.append(device)
-            else:
-                LOGGER.debug(
-                    "Skipping device %s (%s): canUseWiFi is not enabled",
-                    device.get("deviceId"),
-                    device.get("deviceName"),
-                )
-
-        # Detect devices that disappeared (access revoked)
-        current_ids = {d["deviceId"] for d in wifi_devices}
-        if self._known_device_ids:
-            removed = self._known_device_ids - current_ids
-            for device_id in removed:
-                LOGGER.warning(
-                    "Fluss device %s no longer accessible",
-                    device_id,
-                )
-        self._known_device_ids = current_ids
-
+        device_list = devices.get("devices", [])
         statuses = await asyncio.gather(
-            *(
-                self._async_get_device_status(device["deviceId"])
-                for device in wifi_devices
-            )
+            *(self._async_get_device_status(d["deviceId"]) for d in device_list)
         )
-
         return {
             device["deviceId"]: {**device, "status": status}
-            for device, status in zip(wifi_devices, statuses, strict=True)
+            for device, status in zip(device_list, statuses, strict=True)
         }
 
     async def _async_get_device_status(self, device_id: str) -> dict[str, Any] | None:

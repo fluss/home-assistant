@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .coordinator import FlussConfigEntry, device_has_cover_status
+from .coordinator import FlussApiClientError, FlussConfigEntry, device_has_cover_status
 from .entity import FlussEntity
 
 PARALLEL_UPDATES = 1
@@ -25,7 +25,7 @@ async def async_setup_entry(
 
     async_add_entities(
         FlussButton(coordinator, device_id, device)
-        for device_id, device in coordinator.data.items()
+        for device_id, device in devices.items()
         if not device_has_cover_status(device)
     )
 

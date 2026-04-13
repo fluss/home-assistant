@@ -73,24 +73,14 @@ def mock_api_client() -> Generator[AsyncMock]:
         ),
     ):
         client = mock_client.return_value
-        client.async_get_devices.return_value = MOCK_DEVICES
+        client.async_get_devices.return_value = {
+            "devices": [
+                {"deviceId": "2a303030sdj1", "deviceName": "Device 1"},
+                {"deviceId": "ape93k9302j2", "deviceName": "Device 2"},
+            ]
+        }
         client.async_get_device_status.side_effect = lambda device_id: {
-            "2a303030sdj1": {
-                "status": {
-                    "deviceId": "2a303030sdj1",
-                    "openCloseStatus": "Closed",
-                    "internetConnected": True,
-                }
-            },
-            "ape93k9302j2": {
-                "status": {
-                    "deviceId": "ape93k9302j2",
-                    "openCloseStatus": "Open",
-                    "internetConnected": True,
-                }
-            },
+            "2a303030sdj1": {"status": {"openCloseStatus": "Closed"}},
+            "ape93k9302j2": {"status": {"openCloseStatus": "Open"}},
         }.get(device_id, {"status": {}})
-        client.async_trigger_device.return_value = None
-        client.async_open_device.return_value = None
-        client.async_close_device.return_value = None
         yield client

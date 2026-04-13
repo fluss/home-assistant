@@ -19,7 +19,7 @@ class FlussEntity(CoordinatorEntity[FlussDataUpdateCoordinator]):
         self,
         coordinator: FlussDataUpdateCoordinator,
         device_id: str,
-        device: dict[str, Any],
+        device: dict,
         unique_id_suffix: str = "",
     ) -> None:
         """Initialize the entity with a device ID and device data."""
