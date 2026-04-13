@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 from fluss_api import (
@@ -41,7 +40,7 @@ class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]
     ) -> None:
         """Initialize the coordinator."""
         self.api = FlussApiClient(api_key, session=async_get_clientsession(hass))
-        self._known_device_ids: set[str] = set()
+        self._button_only_device_ids: set[str] = set()
         super().__init__(
             hass,
             LOGGER,
@@ -60,13 +59,24 @@ class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]
             raise UpdateFailed(f"Error fetching Fluss devices: {err}") from err
 
         device_list = devices.get("devices", [])
-        statuses = await asyncio.gather(
-            *(self._async_get_device_status(d["deviceId"]) for d in device_list)
-        )
-        return {
-            device["deviceId"]: {**device, "status": status}
-            for device, status in zip(device_list, statuses, strict=True)
-        }
+        result: dict[str, dict[str, Any]] = {}
+        for device in device_list:
+            device_id = device["deviceId"]
+            if device_id in self._button_only_device_ids:
+                # Known non-cover device — skip status polling to avoid
+                # hammering the API with requests that never yield cover state.
+                result[device_id] = {**device, "status": {}}
+                continue
+
+            status = await self._async_get_device_status(device_id)
+            if (
+                status is not None
+                and status.get("openCloseStatus") not in VALID_OPEN_CLOSE_STATUSES
+            ):
+                self._button_only_device_ids.add(device_id)
+            result[device_id] = {**device, "status": status}
+
+        return result
 
     async def _async_get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Fetch status for a single device, returning None on failure."""
