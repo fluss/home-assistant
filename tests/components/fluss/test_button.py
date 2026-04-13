@@ -27,6 +27,9 @@ async def test_buttons(
     snapshot: SnapshotAssertion,
 ) -> None:
     """Test setup with multiple devices."""
+    mock_api_client.async_get_device_status.side_effect = None
+    mock_api_client.async_get_device_status.return_value = {"status": {}}
+
     await setup_integration(hass, mock_config_entry)
 
     await snapshot_platform(hass, entity_registry, snapshot, mock_config_entry.entry_id)
@@ -38,6 +41,9 @@ async def test_button_press(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test successful button press."""
+    mock_api_client.async_get_device_status.side_effect = None
+    mock_api_client.async_get_device_status.return_value = {"status": {}}
+
     await setup_integration(hass, mock_config_entry)
 
     await hass.services.async_call(
@@ -56,6 +62,9 @@ async def test_button_press_error(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test button press with API error."""
+    mock_api_client.async_get_device_status.side_effect = None
+    mock_api_client.async_get_device_status.return_value = {"status": {}}
+
     await setup_integration(hass, mock_config_entry)
 
     mock_api_client.async_trigger_device.side_effect = FlussApiClientError("API Boom")

@@ -21,12 +21,21 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from tests.common import MockConfigEntry
 
 
-async def setup_integration(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
+async def setup_integration(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    platforms: list[Platform] | None = None,
+) -> None:
     """Fixture for setting up the component."""
     config_entry.add_to_hass(hass)
 
-    await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
+    if platforms is not None:
+        with patch("homeassistant.components.fluss.PLATFORMS", platforms):
+            await hass.config_entries.async_setup(config_entry.entry_id)
+            await hass.async_block_till_done()
+    else:
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
 
 
 @pytest.mark.parametrize(
@@ -95,5 +104,5 @@ async def test_platforms_forwarded(
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         assert mock_config_entry.state is ConfigEntryState.LOADED
         hass.config_entries.async_forward_entry_setups.assert_called_with(
-            mock_config_entry, [Platform.BUTTON]
+            mock_config_entry, [Platform.BUTTON, Platform.COVER]
         )

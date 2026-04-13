@@ -52,4 +52,8 @@ def mock_api_client() -> Generator[AsyncMock]:
                 {"deviceId": "ape93k9302j2", "deviceName": "Device 2"},
             ]
         }
+        client.async_get_device_status.side_effect = lambda device_id: {
+            "2a303030sdj1": {"status": {"openCloseStatus": "Closed"}},
+            "ape93k9302j2": {"status": {"openCloseStatus": "Open"}},
+        }.get(device_id, {"status": {}})
         yield client
