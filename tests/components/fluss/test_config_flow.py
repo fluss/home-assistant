@@ -8,7 +8,11 @@ from fluss_api import (
 )
 import pytest
 
-from homeassistant.components.fluss.const import DOMAIN
+from homeassistant.components.fluss.const import (
+    CONF_SCAN_INTERVAL_LIST,
+    DEFAULT_SCAN_INTERVAL_LIST,
+    DOMAIN,
+)
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
@@ -30,12 +34,19 @@ async def test_full_flow(
     assert result["errors"] == {}
 
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {CONF_API_KEY: "valid_api_key"}
+        result["flow_id"],
+        {
+            CONF_API_KEY: "valid_api_key",
+            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+        },
     )
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "My Fluss+ Devices"
-    assert result["data"] == {CONF_API_KEY: "valid_api_key"}
+    assert result["data"] == {
+        CONF_API_KEY: "valid_api_key",
+        CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+    }
 
 
 @pytest.mark.parametrize(
@@ -62,12 +73,19 @@ async def test_step_user_errors(
     assert result["step_id"] == "user"
     assert result["errors"] == {}
 
-    user_input = {CONF_API_KEY: "some_api_key"}
+    user_input = {
+        CONF_API_KEY: "some_api_key",
+        CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+    }
 
     mock_api_client.async_get_devices.side_effect = exception
 
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {CONF_API_KEY: "valid_api_key"}
+        result["flow_id"],
+        {
+            CONF_API_KEY: "valid_api_key",
+            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+        },
     )
 
     assert result["type"] is FlowResultType.FORM
@@ -101,7 +119,10 @@ async def test_duplicate_entry(
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {CONF_API_KEY: "test_api_key"},
+        {
+            CONF_API_KEY: "test_api_key",
+            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+        },
     )
 
     assert result["type"] is FlowResultType.ABORT

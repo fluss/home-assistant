@@ -16,9 +16,22 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN, LOGGER
+from .const import (
+    CONF_SCAN_INTERVAL_LIST,
+    DEFAULT_SCAN_INTERVAL_LIST,
+    DOMAIN,
+    LOGGER,
+    MIN_SCAN_INTERVAL,
+)
 
-STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(CONF_API_KEY): cv.string})
+STEP_USER_DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_API_KEY): cv.string,
+        vol.Required(
+            CONF_SCAN_INTERVAL_LIST, default=DEFAULT_SCAN_INTERVAL_LIST
+        ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
+    }
+)
 
 
 class FlussConfigFlow(ConfigFlow, domain=DOMAIN):
