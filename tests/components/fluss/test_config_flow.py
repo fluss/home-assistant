@@ -9,8 +9,8 @@ from fluss_api import (
 import pytest
 
 from homeassistant.components.fluss.const import (
-    CONF_SCAN_INTERVAL_LIST,
-    DEFAULT_SCAN_INTERVAL_LIST,
+    CONF_SCAN_INTERVAL_STATUS,
+    DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
     DOMAIN,
 )
 from homeassistant.config_entries import SOURCE_USER
@@ -37,7 +37,7 @@ async def test_full_flow(
         result["flow_id"],
         {
             CONF_API_KEY: "valid_api_key",
-            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+            CONF_SCAN_INTERVAL_STATUS: DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
         },
     )
 
@@ -45,7 +45,7 @@ async def test_full_flow(
     assert result["title"] == "My Fluss+ Devices"
     assert result["data"] == {
         CONF_API_KEY: "valid_api_key",
-        CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+        CONF_SCAN_INTERVAL_STATUS: DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
     }
 
 
@@ -75,7 +75,7 @@ async def test_step_user_errors(
 
     user_input = {
         CONF_API_KEY: "some_api_key",
-        CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+        CONF_SCAN_INTERVAL_STATUS: DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
     }
 
     mock_api_client.async_get_devices.side_effect = exception
@@ -84,7 +84,7 @@ async def test_step_user_errors(
         result["flow_id"],
         {
             CONF_API_KEY: "valid_api_key",
-            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+            CONF_SCAN_INTERVAL_STATUS: DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
         },
     )
 
@@ -121,7 +121,7 @@ async def test_duplicate_entry(
         result["flow_id"],
         {
             CONF_API_KEY: "test_api_key",
-            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+            CONF_SCAN_INTERVAL_STATUS: DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
         },
     )
 

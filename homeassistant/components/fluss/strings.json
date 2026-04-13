@@ -12,13 +12,20 @@
       "user": {
         "data": {
           "api_key": "[%key:common::config_flow::data::api_key%]",
-          "scan_interval_list": "Device list refresh interval"
+          "scan_interval_status": "Device status refresh interval"
         },
         "data_description": {
           "api_key": "The API key found in the profile page of the Fluss+ app.",
-          "scan_interval_list": "How often (in seconds) to refresh your device list from the Fluss+ API. The device list rarely changes, so a larger value is recommended."
+          "scan_interval_status": "How often to check the current status of your devices."
         },
         "description": "Your Fluss API key, available in the profile page of the Fluss+ app"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "internet": {
+        "name": "Internet"
       }
     }
   }

@@ -15,7 +15,7 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Fluss Devices, filtering out any invalid payloads."""
-    coordinator = entry.runtime_data
+    coordinator = entry.runtime_data.list_coordinator
     devices = coordinator.data
 
     async_add_entities(

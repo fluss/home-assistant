@@ -12,24 +12,37 @@ from fluss_api import (
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_API_KEY
+from homeassistant.const import CONF_API_KEY, UnitOfTime
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+)
 
 from .const import (
-    CONF_SCAN_INTERVAL_LIST,
-    DEFAULT_SCAN_INTERVAL_LIST,
+    CONF_SCAN_INTERVAL_STATUS,
+    DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
     DOMAIN,
     LOGGER,
-    MIN_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL_MINUTES,
 )
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_API_KEY): cv.string,
         vol.Required(
-            CONF_SCAN_INTERVAL_LIST, default=DEFAULT_SCAN_INTERVAL_LIST
-        ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
+            CONF_SCAN_INTERVAL_STATUS,
+            default=DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
+        ): NumberSelector(
+            NumberSelectorConfig(
+                min=MIN_SCAN_INTERVAL_MINUTES,
+                step=1,
+                mode=NumberSelectorMode.BOX,
+                unit_of_measurement=UnitOfTime.MINUTES,
+            )
+        ),
     }
 )
 

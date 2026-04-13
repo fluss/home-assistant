@@ -8,8 +8,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from homeassistant.components.fluss.const import (
-    CONF_SCAN_INTERVAL_LIST,
-    DEFAULT_SCAN_INTERVAL_LIST,
+    CONF_SCAN_INTERVAL_STATUS,
+    DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
     DOMAIN,
 )
 from homeassistant.const import CONF_API_KEY
@@ -25,7 +25,7 @@ def mock_config_entry() -> MockConfigEntry:
         title="My Fluss+ Devices",
         data={
             CONF_API_KEY: "test_api_key",
-            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
+            CONF_SCAN_INTERVAL_STATUS: DEFAULT_SCAN_INTERVAL_STATUS_MINUTES,
         },
     )
 
@@ -41,10 +41,10 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 
 @pytest.fixture
 def mock_api_client() -> Generator[AsyncMock]:
-    """Mock Fluss API client with single device."""
+    """Mock Fluss API client with a single device and a default status payload."""
     with (
         patch(
-            "homeassistant.components.fluss.coordinator.FlussApiClient",
+            "homeassistant.components.fluss.FlussApiClient",
             autospec=True,
         ) as mock_client,
         patch(
@@ -58,5 +58,18 @@ def mock_api_client() -> Generator[AsyncMock]:
                 {"deviceId": "2a303030sdj1", "deviceName": "Device 1"},
                 {"deviceId": "ape93k9302j2", "deviceName": "Device 2"},
             ]
+        }
+        client.async_get_device_status.return_value = {
+            "status": {
+                "deviceId": "abc123",
+                "internetConnected": True,
+                "connectionTimeStamp": 1711324800000,
+                "updatedTimeStamp": 1711324860000,
+                "ipAddress": "192.168.1.50",
+                "openCloseStatus": "Closed",
+                "fwv": "2.1.4",
+                "ssid": "HomeWifi",
+                "rssi": -42,
+            }
         }
         yield client

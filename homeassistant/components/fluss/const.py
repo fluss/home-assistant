@@ -1,10 +1,13 @@
 """Constants for the Fluss+ integration."""
 
+from datetime import timedelta
 import logging
 
 DOMAIN = "fluss"
 LOGGER = logging.getLogger(__name__)
 
-CONF_SCAN_INTERVAL_LIST = "scan_interval_list"
-DEFAULT_SCAN_INTERVAL_LIST = 1800
-MIN_SCAN_INTERVAL = 10
+DEVICE_LIST_UPDATE_INTERVAL = timedelta(minutes=30)
+
+CONF_SCAN_INTERVAL_STATUS = "scan_interval_status"
+DEFAULT_SCAN_INTERVAL_STATUS_MINUTES = 30
+MIN_SCAN_INTERVAL_MINUTES = 1
