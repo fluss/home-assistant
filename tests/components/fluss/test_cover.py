@@ -15,7 +15,7 @@ from homeassistant.components.cover import (
     SERVICE_OPEN_COVER,
 )
 from homeassistant.components.fluss.cover import STATUS_REFRESH_DELAY
-from homeassistant.const import ATTR_ENTITY_ID, STATE_UNKNOWN, Platform
+from homeassistant.const import ATTR_ENTITY_ID, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
@@ -34,7 +34,7 @@ async def test_covers(
     snapshot: SnapshotAssertion,
 ) -> None:
     """Test cover entities are created for devices with openCloseStatus."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     await snapshot_platform(hass, entity_registry, snapshot, mock_config_entry.entry_id)
 
@@ -45,7 +45,7 @@ async def test_cover_open(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test opening a cover."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     await hass.services.async_call(
         COVER_DOMAIN,
@@ -63,7 +63,7 @@ async def test_cover_close(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test closing a cover."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     await hass.services.async_call(
         COVER_DOMAIN,
@@ -81,7 +81,7 @@ async def test_cover_open_error(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test cover open raises a translated HomeAssistantError on API failure."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     mock_api_client.async_open_device.side_effect = FlussApiClientError("API Boom")
 
@@ -104,7 +104,7 @@ async def test_cover_close_error(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test cover close raises a translated HomeAssistantError on API failure."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     mock_api_client.async_close_device.side_effect = FlussApiClientError("API Boom")
 
@@ -127,7 +127,7 @@ async def test_cover_state_closed(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test cover reports closed state from openCloseStatus."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     state = hass.states.get("cover.device_1")
     assert state is not None
@@ -140,7 +140,7 @@ async def test_cover_state_open(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test cover reports open state from openCloseStatus."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     state = hass.states.get("cover.device_2")
     assert state is not None
@@ -157,7 +157,7 @@ async def test_cover_state_unknown_when_status_unavailable(
         "Status unavailable"
     )
 
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     assert hass.states.get("cover.device_1") is None
     assert hass.states.get("cover.device_2") is None
@@ -172,7 +172,7 @@ async def test_no_cover_when_status_missing(
     mock_api_client.async_get_device_status.side_effect = None
     mock_api_client.async_get_device_status.return_value = {"status": {}}
 
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     assert hass.states.get("cover.device_1") is None
     assert hass.states.get("cover.device_2") is None
@@ -184,7 +184,7 @@ async def test_cover_state_unknown_on_unexpected_status(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test cover reports unknown when the API returns an unrecognized status."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     mock_api_client.async_get_device_status.side_effect = lambda device_id: {
         "status": {"deviceId": device_id, "openCloseStatus": "Moving"}
@@ -211,7 +211,7 @@ async def test_cover_open_schedules_delayed_refresh(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test opening a cover schedules a delayed coordinator refresh."""
-    await setup_integration(hass, mock_config_entry, [Platform.COVER])
+    await setup_integration(hass, mock_config_entry)
 
     mock_api_client.async_get_devices.reset_mock()
 
