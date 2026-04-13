@@ -42,5 +42,5 @@ class FlussEntity(CoordinatorEntity[FlussDataUpdateCoordinator]):
 
     @property
     def device(self) -> dict[str, Any]:
-        """Return the stored device data."""
-        return self.coordinator.data[self.device_id]
+        """Return the stored device data, or an empty dict if unavailable."""
+        return self.coordinator.data.get(self.device_id, {})

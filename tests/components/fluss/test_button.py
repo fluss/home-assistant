@@ -61,7 +61,7 @@ async def test_button_press_error(
     mock_api_client: AsyncMock,
     mock_config_entry: MockConfigEntry,
 ) -> None:
-    """Test button press with API error."""
+    """Test button press raises a translated HomeAssistantError on API failure."""
     mock_api_client.async_get_device_status.side_effect = None
     mock_api_client.async_get_device_status.return_value = {"status": {}}
 
@@ -69,13 +69,17 @@ async def test_button_press_error(
 
     mock_api_client.async_trigger_device.side_effect = FlussApiClientError("API Boom")
 
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(HomeAssistantError) as exc_info:
         await hass.services.async_call(
             BUTTON_DOMAIN,
             SERVICE_PRESS,
             {ATTR_ENTITY_ID: "button.device_1"},
             blocking=True,
         )
+
+    assert exc_info.value.translation_domain == "fluss"
+    assert exc_info.value.translation_key == "trigger_failed"
+    assert exc_info.value.translation_placeholders == {"error": "API Boom"}
 
 
 async def test_no_button_when_cover_status_available(

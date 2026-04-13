@@ -106,20 +106,5 @@ class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]
         except FlussApiClientError as err:
             LOGGER.debug("Failed to get status for device %s: %s", device_id, err)
             return None
-        if not isinstance(response, dict):
-            LOGGER.debug(
-                "Unexpected status response type for device %s: %s",
-                device_id,
-                type(response).__name__,
-            )
-            return None
-        # Unwrap the nested "status" key from the API response
-        status = response.get("status", response)
-        if isinstance(status, dict):
-            return status
-        LOGGER.debug(
-            "Unexpected nested status type for device %s: %s",
-            device_id,
-            type(status).__name__,
-        )
-        return None
+        status = response.get("status") if isinstance(response, dict) else None
+        return status if isinstance(status, dict) else None
