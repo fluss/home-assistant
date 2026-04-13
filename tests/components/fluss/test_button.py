@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock
 
-from fluss_api import FlussApiClientError
+from fluss_api import FlussApiClient, FlussApiClientError
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN, SERVICE_PRESS
-from homeassistant.const import ATTR_ENTITY_ID, Platform
+from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
@@ -27,9 +27,6 @@ async def test_buttons(
     snapshot: SnapshotAssertion,
 ) -> None:
     """Test setup with multiple devices."""
-    mock_api_client.async_get_device_status.side_effect = None
-    mock_api_client.async_get_device_status.return_value = {"status": {}}
-
     await setup_integration(hass, mock_config_entry)
 
     await snapshot_platform(hass, entity_registry, snapshot, mock_config_entry.entry_id)
@@ -37,13 +34,10 @@ async def test_buttons(
 
 async def test_button_press(
     hass: HomeAssistant,
-    mock_api_client: AsyncMock,
+    mock_api_client: FlussApiClient,
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test successful button press."""
-    mock_api_client.async_get_device_status.side_effect = None
-    mock_api_client.async_get_device_status.return_value = {"status": {}}
-
     await setup_integration(hass, mock_config_entry)
 
     await hass.services.async_call(
@@ -58,37 +52,18 @@ async def test_button_press(
 
 async def test_button_press_error(
     hass: HomeAssistant,
-    mock_api_client: AsyncMock,
+    mock_api_client: FlussApiClient,
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test button press with API error."""
-    mock_api_client.async_get_device_status.side_effect = None
-    mock_api_client.async_get_device_status.return_value = {"status": {}}
-
     await setup_integration(hass, mock_config_entry)
 
     mock_api_client.async_trigger_device.side_effect = FlussApiClientError("API Boom")
 
-    with pytest.raises(HomeAssistantError) as exc_info:
+    with pytest.raises(HomeAssistantError, match="Failed to trigger device: API Boom"):
         await hass.services.async_call(
             BUTTON_DOMAIN,
             SERVICE_PRESS,
             {ATTR_ENTITY_ID: "button.device_1"},
             blocking=True,
         )
-
-    assert exc_info.value.translation_domain == "fluss"
-    assert exc_info.value.translation_key == "trigger_failed"
-    assert exc_info.value.translation_placeholders == {"error": "API Boom"}
-
-
-async def test_no_button_when_cover_status_available(
-    hass: HomeAssistant,
-    mock_api_client: AsyncMock,
-    mock_config_entry: MockConfigEntry,
-) -> None:
-    """Test that no button entities are created when openCloseStatus is present."""
-    await setup_integration(hass, mock_config_entry, [Platform.BUTTON])
-
-    assert hass.states.get("button.device_1") is None
-    assert hass.states.get("button.device_2") is None
