@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from fluss_api import (
@@ -21,8 +22,16 @@ from .const import LOGGER, UPDATE_INTERVAL_TIMEDELTA
 
 type FlussConfigEntry = ConfigEntry[FlussDataUpdateCoordinator]
 
+VALID_OPEN_CLOSE_STATUSES = {"Open", "Closed"}
 
-class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+
+def device_has_cover_status(device_data: dict[str, Any]) -> bool:
+    """Return True if the device status contains a valid openCloseStatus."""
+    status = device_data.get("status") or {}
+    return status.get("openCloseStatus") in VALID_OPEN_CLOSE_STATUSES
+
+
+class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     """Manages fetching Fluss device data on a schedule."""
 
     def __init__(
@@ -47,4 +56,21 @@ class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except FlussApiClientError as err:
             raise UpdateFailed(f"Error fetching Fluss devices: {err}") from err
 
-        return {device["deviceId"]: device for device in devices.get("devices", [])}
+        device_list = devices.get("devices", [])
+        statuses = await asyncio.gather(
+            *(self._async_get_device_status(d["deviceId"]) for d in device_list)
+        )
+        return {
+            device["deviceId"]: {**device, "status": status}
+            for device, status in zip(device_list, statuses, strict=True)
+        }
+
+    async def _async_get_device_status(self, device_id: str) -> dict[str, Any] | None:
+        """Fetch status for a single device, returning None on failure."""
+        try:
+            response = await self.api.async_get_device_status(device_id)
+        except FlussApiClientError as err:
+            LOGGER.debug("Failed to get status for device %s: %s", device_id, err)
+            return None
+        status = response.get("status") if isinstance(response, dict) else None
+        return status if isinstance(status, dict) else None
