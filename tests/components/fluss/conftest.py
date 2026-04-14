@@ -7,11 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from homeassistant.components.fluss.const import (
-    CONF_SCAN_INTERVAL_LIST,
-    DEFAULT_SCAN_INTERVAL_LIST,
-    DOMAIN,
-)
+from homeassistant.components.fluss.const import DOMAIN
 from homeassistant.const import CONF_API_KEY
 
 from tests.common import MockConfigEntry
@@ -23,10 +19,7 @@ def mock_config_entry() -> MockConfigEntry:
     return MockConfigEntry(
         domain=DOMAIN,
         title="My Fluss+ Devices",
-        data={
-            CONF_API_KEY: "test_api_key",
-            CONF_SCAN_INTERVAL_LIST: DEFAULT_SCAN_INTERVAL_LIST,
-        },
+        data={CONF_API_KEY: "test_api_key"},
     )
 
 

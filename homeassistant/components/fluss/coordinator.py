@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Any
 
 from fluss_api import (
@@ -18,7 +17,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import slugify
 
-from .const import CONF_SCAN_INTERVAL_LIST, DEFAULT_SCAN_INTERVAL_LIST, LOGGER
+from .const import LOGGER, UPDATE_INTERVAL_TIMEDELTA
 
 type FlussConfigEntry = ConfigEntry[FlussDataUpdateCoordinator]
 
@@ -31,15 +30,12 @@ class FlussDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     ) -> None:
         """Initialize the coordinator."""
         self.api = FlussApiClient(api_key, session=async_get_clientsession(hass))
-        interval = config_entry.data.get(
-            CONF_SCAN_INTERVAL_LIST, DEFAULT_SCAN_INTERVAL_LIST
-        )
         super().__init__(
             hass,
             LOGGER,
             name=f"Fluss+ ({slugify(api_key[:8])})",
             config_entry=config_entry,
-            update_interval=timedelta(seconds=interval),
+            update_interval=UPDATE_INTERVAL_TIMEDELTA,
         )
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
