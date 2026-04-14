@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 from fluss_api import FlussApiClient, FlussApiClientError
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN, SERVICE_PRESS
-from homeassistant.const import ATTR_ENTITY_ID, Platform
+from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
@@ -27,10 +27,7 @@ async def test_buttons(
     snapshot: SnapshotAssertion,
 ) -> None:
     """Test setup with multiple devices."""
-    with patch(
-        "homeassistant.components.fluss.PLATFORMS", [Platform.BUTTON]
-    ):
-        await setup_integration(hass, mock_config_entry)
+    await setup_integration(hass, mock_config_entry)
 
     await snapshot_platform(hass, entity_registry, snapshot, mock_config_entry.entry_id)
 
